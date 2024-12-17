@@ -1,56 +1,51 @@
-from openai import OpenAI
-import edge_tts
-import json
+from flask import send_file, jsonify
 import asyncio
-import whisper_timestamped as whisper
 from utility.script.script_generator import generate_script
 from utility.audio.audio_generator import generate_audio
-from utility.captions.timed_captions_generator import generate_timed_captions
-from utility.video.background_video_generator import generate_video_url
-from utility.render.render_engine import get_output_media
-from utility.video.video_search_query_generator import getVideoSearchQueriesTimed, merge_empty_intervals
+from utility.captions.timed_captions_generator import SRTGenerator
+from utility.image.image_generator import parse_srt_file, image_generator
+from utility.video.video_generator import get_final_video
 
 async def generate_video_from_topic(topic):
     SAMPLE_FILE_NAME = "audio_tts.wav"
-    VIDEO_SERVER = "pexel"
+    OUTPUT_SRT_PATH = "generated_subtitles.srt"
+    MODEL_NAME = "small"
+    LANGUAGE = "japanese"
+    PROMPTS = parse_srt_file(OUTPUT_SRT_PATH)
+    IMAGES_DIR = "output_images"
+    AUDIO_FILE = "audio_tts.wav"
 
     # Generate the script
     response = generate_script(topic)
-    print("script: {}".format(response))
-
-    # return response
-
-    # Continue with synchronous audio, captions, video generation if necessary
-
+    print(f"Script generated: {response}")
 
     # Generate audio
     await generate_audio(response, SAMPLE_FILE_NAME)
 
     # Generate timed captions
-    timed_captions = generate_timed_captions(SAMPLE_FILE_NAME)
-    print(timed_captions)
+    try:
+        caption_generator = SRTGenerator(
+            video_path=SAMPLE_FILE_NAME,
+            output_srt=OUTPUT_SRT_PATH,
+            model_name=MODEL_NAME,
+            language=LANGUAGE
+        )
+        timed_caption = caption_generator.run()
+        print(timed_caption)
 
-    # Get search terms for video clips
-    search_terms = getVideoSearchQueriesTimed(response, timed_captions)
-    print(search_terms)
-
-    # Get background video URLs
-    background_video_urls = None
-    if search_terms is not None:
-        background_video_urls = generate_video_url(search_terms, VIDEO_SERVER)
-        print(background_video_urls)
-    else:
-        print("No background video")
-
-    # Merge empty intervals
-    background_video_urls = merge_empty_intervals(background_video_urls)
-
-    # Generate final video
-    if background_video_urls is not None:
-        video = get_output_media(SAMPLE_FILE_NAME, timed_captions, background_video_urls, VIDEO_SERVER)
-        print(video)
-        return video  # Return the video file path or URL
-    else:
-        print("No video")
+    except Exception as e:
+        print(f"Error generating captions: {e}")
         return None
 
+    # Ensure image generation is awaited if it’s async
+    image_urls = image_generator(PROMPTS, image_size="1024x1024")
+    
+    try:
+        # Generate the final video from image URLs
+        output_video_path = get_final_video(image_urls, AUDIO_FILE)
+
+        # Return the video file as a response
+        return send_file(output_video_path, mimetype="video/mp4")
+
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500

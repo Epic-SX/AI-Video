@@ -2,18 +2,23 @@ import os
 from openai import OpenAI
 import json
 import re
+from dotenv import load_dotenv
 
+load_dotenv()
 
-if len(os.environ.get("GROQ_API_KEY")) > 30:
-    from groq import Groq
-    model = "mixtral-8x7b-32768"
-    client = Groq(
-        api_key=os.environ.get("GROQ_API_KEY"),
-        )
-else:
-    OPENAI_API_KEY = os.getenv('OPENAI_KEY')
-    model = "gpt-4o"
-    client = OpenAI(api_key=OPENAI_API_KEY)
+GROQ_API_KEY = os.getenv("GROQ_API_KEY")
+OPENAI_API_KEY = os.getenv("OPENAI")
+
+# if len(GROQ_API_KEY) > 30:
+#     from groq import Groq
+#     model = "mixtral-8x7b-32768"
+#     client = Groq(
+#         api_key=GROQ_API_KEY,
+#         )
+# else:
+    
+model = "gpt-4o"
+client = OpenAI(api_key=OPENAI_API_KEY)
 
 def generate_script(topic):
     prompt = (
