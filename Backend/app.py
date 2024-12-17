@@ -2,6 +2,8 @@ from flask import Flask, jsonify, request
 from flask_cors import CORS
 import asyncio
 from video_generator import generate_video_from_topic
+import os
+from dotenv import load_dotenv
 
 app = Flask(__name__)
 CORS(app)  # Enable Cross-Origin Resource Sharing for React

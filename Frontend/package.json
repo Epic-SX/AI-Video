@@ -45,6 +45,7 @@
   },
   "devDependencies": {
     "@types/react-color": "^3.0.12",
+    "eslint-config-react-app": "^7.0.1",
     "file-loader": "^6.2.0"
   }
 }
