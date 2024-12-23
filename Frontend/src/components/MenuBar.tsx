@@ -2,7 +2,6 @@ import React, { useState } from "react";
 import create from "../assets/image/ic_startmode-BuGMTegX.svg";
 import FontSizeSelector from "./utils/FontSize";
 import ColorPicker from "./utils/ColorPicker";
-import Header from "../components/Header"; // Import Header
 import Create from "../pages/Create"; // Import Create component
 
 export default function MenuBar() {

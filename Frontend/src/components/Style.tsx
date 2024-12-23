@@ -2,10 +2,18 @@ import React, { useState } from "react";
 import { HiMiniQuestionMarkCircle } from "react-icons/hi2";
 import StyleCard from "./utils/StyleCard";
 import { cardData } from "../constants/cardData";
+import { useVideoContext } from "../context/VideoContext" 
 
 export default function Style() {
-  const [activeButton, setActiveButton] = useState<null | string>("動画スタイル");
-  const [selectedCard, setSelectedCard] = useState<null | number>(null); // Update type to match card.id
+  const [activeButton,  setActiveButton] = useState<null | string>("動画スタイル");
+  const [selectedCard, setSelectedCard] = useState<null | number>(0); // Update type to match card.id
+  const {setStyleNumber} = useVideoContext();
+
+  const handleStyle = (id:number)=>{
+    setSelectedCard(id);
+    setStyleNumber(id);
+    console.log(id)
+  }
 
   return (
     <div className="w-full font-sans min-h-[calc(100vh-82px)] relative bg-gray-50">
@@ -44,7 +52,7 @@ export default function Style() {
         <div className="w-3/4 mt-8 pr-2 overflow-y-auto h-[700px]">
           {activeButton === "動画スタイル" && (
             <div className="grid lg:grid-cols-2 xl:grid-cols-3 gap-4">
-              {cardData.map((card) => (
+              {cardData.map((card,index) => (
                 <StyleCard
                   key={card.id}
                   id={card.id}
@@ -52,7 +60,7 @@ export default function Style() {
                   title={card.title}
                   description={card.description}
                   isSelected={selectedCard === card.id} // Check if selected
-                  onClick={() => setSelectedCard(card.id)} // Set selected card
+                  onClick={() => handleStyle(index+1)} // Set selected card
                 />
               ))}
             </div>

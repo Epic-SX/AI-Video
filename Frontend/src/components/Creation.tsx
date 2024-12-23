@@ -1,5 +1,6 @@
-import React, { useState } from "react";
+import React, { useState, useRef, forwardRef, useImperativeHandle } from "react";
 import axios from "axios";
+import { useVideoContext } from "../context/VideoContext"
 import ToggleSwitch from "./utils/ToggleSwitch";
 import { HiMiniQuestionMarkCircle } from "react-icons/hi2";
 import { FaWandMagicSparkles } from "react-icons/fa6";
@@ -14,11 +15,14 @@ import tts from "../assets/image/ic_ttv_option_tts-DWELf0eR.svg";
 import image from "../assets/image/ic_ttv_option_image-96eMZhIZ.svg";
 import media from "../assets/image/ic_ttv_option_bgm-sf29aAVo.svg"
 
-export default function Creation() {
+const Creation =  forwardRef((_, ref) => {
   const [inputValue, setInputValue] = useState<{ topic: string }>({ topic: '' });
   const [gptType, setGptType] = useState<string>("gpt_3.5");
-
+  const [error, setError] = useState<string | null>(null);
+  const [loading, setLoading] = useState(false);
   const [response, setResponse] = useState<{ script?: string } | null>(null);
+  const textareaRef = useRef<HTMLTextAreaElement>(null);
+  const { setSrtContent } = useVideoContext();
 
   // Handle input changes with proper type annotations
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -26,7 +30,9 @@ export default function Creation() {
   };
 
   const handleCreate = (e: React.MouseEvent<HTMLButtonElement>) => {
-    const apiUrl = `${process.env.REACT_APP_API_BASE_URL}/api/generate-video`;
+    setError(null);
+    setLoading(true);
+    const apiUrl = `${process.env.REACT_APP_API_BASE_URL}/api/generate-script`;
     axios
       .post(apiUrl, inputValue, {
         headers: {
@@ -34,13 +40,41 @@ export default function Creation() {
         },
       })
       .then((res) => {
-        setResponse(res.data);
-        console.log('Success:', res.data);
+        setResponse((prev) => ({
+          ...prev,
+          script: res.data,
+        }));
+        setLoading(false);
+        console.log('Success:', res);
       })
       .catch((error) => {
         console.error('Error:', error);
       });
   };
+
+  const handleScript =(e: React.MouseEvent<HTMLButtonElement>) =>{
+    setError(null);
+    setLoading(true);
+    const apiUrl = `${process.env.REACT_APP_API_BASE_URL}/api/generate-video`;
+    axios
+      .post(apiUrl, response, {
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      })
+      .then((res) => {
+        setSrtContent(res.data);
+        setLoading(false);
+        console.log('Success:', res);
+      })
+      .catch((error) => {
+        console.error('Error:', error);
+      });
+  }
+
+  useImperativeHandle(ref, () => ({
+    handleScript,
+  }));
 
   const handleScriptChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
     setResponse((prev) => ({
@@ -49,7 +83,14 @@ export default function Creation() {
     }));
   };
 
-  console.log("---------", response?.script)
+  const handleFocusTextarea = () => {
+    if (textareaRef.current) {
+      textareaRef.current.focus();
+    }
+  };
+
+  console.log("-------->>>>><<<<<--------",response)
+
   const handleGptTypeChange = (e: React.ChangeEvent<HTMLSelectElement>) =>
     setGptType(e.target.value);
 
@@ -124,7 +165,8 @@ export default function Creation() {
             {topics.map((topic, index) => (
               <p
                 key={index}
-                className="p-2 border rounded-md inline-block text-sm"
+                className="p-2 border rounded-md inline-block text-sm hover:cursor-pointer"
+                onClick={() => setInputValue({ topic })}
               >
                 {topic}
               </p>
@@ -143,14 +185,16 @@ export default function Creation() {
 
         <div className="pt-4 ">
           <p className="font-bold">台本</p>
-          {response?.script ? (
+          {response ? (
             <div className="border-[1px] mt-4 w-full bg-white rounded-md border-gray-100">
               <textarea
+                ref={textareaRef}
                 className="focus:outline-none p-3 w-full h-[480px] resize-none"
                 value={response.script}
                 onChange={handleScriptChange}
               ></textarea>
               <button
+                onClick={handleFocusTextarea}
                 className="p-2 m-2 rounded-md flex hover:bg-gray-100 border-gray-100 border-[1px] justify-center gap-2 items-center text-gray-600"
                 aria-label="AIで作文"
               >
@@ -160,10 +204,11 @@ export default function Creation() {
             </div>
           ) : (
             <div className="border-[1px] mt-4 w-full bg-white rounded-md border-gray-100">
-              <textarea className="focus:outline-none  p-3 w-full h-[480px] resize-none "></textarea>
+              <textarea ref={textareaRef} className="focus:outline-none  p-3 w-full h-[480px] resize-none "></textarea>
               <button
                 className="p-2 m-2 rounded-md flex hover:bg-gray-100 border-gray-100 border-[1px] justify-center gap-2 items-center text-gray-600"
                 aria-label="AIで作文"
+                onClick={handleFocusTextarea}
               >
                 <LuArrowRightFromLine className="text-gray-600 text-lg" />
                 <p>続きを書く</p>
@@ -259,7 +304,6 @@ export default function Creation() {
                 </div>
               </div>
             </div>
-
           </div>
         </div>
 
@@ -267,4 +311,6 @@ export default function Creation() {
       </div>
     </div>
   );
-}
+})
+
+export default Creation;
