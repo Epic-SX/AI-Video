@@ -30,12 +30,15 @@ def image_generator(prompts, image_size="1024x1024"):
     images = []
     for prompt in prompts:
         try:
-            # Call OpenAI's API to generate an image based on the prompt
+            # Modify the prompt to emphasize Japanese text
+            japanese_prompt = f"{prompt} (日本語のテキストを使用して、画像の内容に日本語を含めてください)"
+            
+            # Call OpenAI's API to generate an image based on the modified prompt
             response = client.images.generate(
-                prompt=prompt,
+                prompt=japanese_prompt,
                 model="dall-e-3",  # Set the model to DALL-E 3
                 n=1,  # Number of images to generate
-                quality="standard",
+                quality="hd",
                 size=image_size,
             )
 
