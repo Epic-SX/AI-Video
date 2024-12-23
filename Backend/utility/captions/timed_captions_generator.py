@@ -65,15 +65,16 @@ class SRTGenerator(SubtitleProcessor):
 
     def run(self):
         try:
-            # self.extract_audio()
+        # self.extract_audio()  # Uncomment if you need to extract audio separately.
             transcription = self.transcribe_audio()
             chunks = self.split_into_chunks(transcription)
             results = self.process_chunks(chunks)
-            self.create_srt(results)
+            srt_content = self.create_srt(results)  # Capture the SRT content here.
             logger.info(f"SRT file has been generated: {self.srt_path}")
+            return srt_content  # Return the SRT content.
         finally:
             self.cleanup_temp_files()
-
+            
     def extract_audio(self):
         logger.info("Extracting audio from video...")
         video = VideoFileClip(self.video_path)
@@ -131,99 +132,11 @@ class SRTGenerator(SubtitleProcessor):
             sub = srt.Subtitle(index=i, start=start, end=end, content=text)
             subs.append(sub)
         
+        srt_content = srt.compose(subs)
         with open(self.srt_path, 'w', encoding='utf-8') as f:
-            f.write(srt.compose(subs))
-
-class SubtitleAdder(SubtitleProcessor):
-    def __init__(self, video_path: str, output_video: str, input_srt: str, subtitle_height: int = Config.DEFAULT_SUBTITLE_HEIGHT):
-        super().__init__(video_path, input_srt)
-        self.output_video = output_video
-        self.subtitle_height = subtitle_height
-
-    def run(self):
-        try:
-            subs = self.load_srt(self.srt_path)
-            self.add_subtitles_to_video(subs)
-            logger.info(f"Video with subtitles has been generated: {self.output_video}")
-        finally:
-            self.cleanup_temp_files()
-
-    @staticmethod
-    def load_srt(srt_path: str) -> List[srt.Subtitle]:
-        logger.info(f"Loading SRT file: {srt_path}")
-        with open(srt_path, 'r', encoding='utf-8') as f:
-            return list(srt.parse(f.read()))
-
-    def add_subtitles_to_video(self, subs: List[srt.Subtitle]):
-        logger.info(f"Adding subtitles to video with subtitle space height of {self.subtitle_height} pixels...")
-        video = VideoFileClip(self.video_path)
+            f.write(srt_content)
         
-        original_width, original_height = video.w, video.h
-        new_height = original_height + self.subtitle_height
-        
-        background = ColorClip(size=(original_width, new_height), color=(0,0,0), duration=video.duration)
-        video_clip = video.set_position((0, 0))
-        
-        subtitle_clips = [
-            self.create_subtitle_clip(sub.content, original_width)
-                .set_start(sub.start.total_seconds())
-                .set_end(sub.end.total_seconds())
-                .set_position((0, original_height))
-            for sub in subs
-        ]
-        
-        final_video = CompositeVideoClip([background, video_clip] + subtitle_clips, size=(original_width, new_height))
-        final_video = final_video.set_duration(video.duration)
-        
-        final_video.write_videofile(
-            self.output_video, 
-            codec=Config.VIDEO_CODEC, 
-            audio_codec=Config.AUDIO_CODEC,
-            preset=Config.VIDEO_PRESET,
-            ffmpeg_params=['-crf', Config.CRF, '-pix_fmt', Config.PIXEL_FORMAT],
-            verbose=False,
-            logger=None
-        )
-
-    @staticmethod
-    def create_subtitle_clip(txt: str, video_width: int, font_size: int = Config.DEFAULT_FONT_SIZE, max_lines: int = Config.MAX_SUBTITLE_LINES) -> ImageClip:
-        if any(ord(char) > 127 for char in txt):
-            font_path = Config.JAPANESE_FONT_PATH
-        else:
-            font_path = Config.FONT_PATH
-
-        try:
-            font = ImageFont.truetype(font_path, font_size)
-        except IOError:
-            logger.warning(f"Failed to load font from {font_path}. Falling back to default font.")
-            font = ImageFont.load_default()
-        
-        max_char_count = int(video_width / (font_size * 0.6))
-        wrapped_text = textwrap.fill(txt, width=max_char_count)
-        lines = wrapped_text.split('\n')[:max_lines]
-        
-        dummy_img = Image.new('RGB', (video_width, font_size * len(lines)))
-        dummy_draw = ImageDraw.Draw(dummy_img)
-        max_line_width = max(dummy_draw.textbbox((0, 0), line, font=font)[2] for line in lines)
-        total_height = sum(dummy_draw.textbbox((0, 0), line, font=font)[3] for line in lines)
-        
-        img_width, img_height = video_width, total_height + 20
-        img = Image.new('RGBA', (img_width, img_height), (0, 0, 0, 0))
-        draw = ImageDraw.Draw(img)
-        
-        y_text = 10
-        for line in lines:
-            bbox = draw.textbbox((0, 0), line, font=font)
-            x_text = (img_width - bbox[2]) // 2
-            
-            for adj in range(-2, 3):
-                for adj2 in range(-2, 3):
-                    draw.text((x_text+adj, y_text+adj2), line, font=font, fill=(0, 0, 0, 255))
-            
-            draw.text((x_text, y_text), line, font=font, fill=(255, 255, 255, 255))
-            y_text += bbox[3]
-        
-        return ImageClip(np.array(img))
+        return srt_content
 
 
 

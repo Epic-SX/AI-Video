@@ -1,36 +1,87 @@
-from flask import Flask, jsonify, request
-from flask_cors import CORS
-import asyncio
-from video_generator import generate_video_from_topic
+from quart import Quart, send_file, jsonify, request
+from quart_cors import cors
+from utility.video_generator import generate_video_from_topic
+from utility.script_generator import generate_script_from_topic
 import os
-from dotenv import load_dotenv
 
-app = Flask(__name__)
-CORS(app)  # Enable Cross-Origin Resource Sharing for React
+app = Quart(__name__)
+app = cors(app)  # Enable CORS for Quart
 
-@app.route('/api/data', methods=['GET'])
-def get_data():
-    return jsonify({"message": "Hello from Flask!"})
-
-@app.route('/api/generate-video', methods=['POST'])
-def generate_video():
+@app.route('/api/generate-script', methods=['POST'])
+async def generate_script():
     try:
-        # Parse the topic from the frontend's request
-        data = request.json
+        # Await the JSON body from the request
+        data = await request.json
         print(f"Received data: {data}")
         topic = data.get("topic")
         if not topic:
             return jsonify({"error": "Topic is required"}), 400
 
-        # Call the asynchronous video generation function using asyncio.run
-        output_video = asyncio.run(generate_video_from_topic(topic))
-
-        # Return the generated video URL or file path
-        return jsonify({"message": "Video generated successfully!", "script": output_video})
+        # Call the asynchronous script generation function
+        script = await generate_script_from_topic(topic)
+        
+        return script
 
     except Exception as e:
         print(f"Error: {e}")
         return jsonify({"error": str(e)}), 500
 
+@app.route('/api/generate-video', methods=['POST'])
+async def generate_video():
+    try:
+        # Await the JSON body from the request
+        data = await request.json
+        print(f"Received data: {data}")
+        script = data.get("script")
+        if not script:
+            return jsonify({"error": "Topic is required"}), 400
+
+        # Call the asynchronous video generation function
+        srt_content = await generate_video_from_topic(script)
+        
+        video_path = os.path.join(os.path.dirname(__file__), 'output_video.mp4')
+
+        # Return the generated video
+        return srt_content
+
+    except Exception as e:
+        print(f"Error: {e}")
+        return jsonify({"error": str(e)}), 500
+    
+@app.route('/api/generate-topic', methods=['POST'])
+async def generate_topic():
+    try:
+        # Await the JSON body from the request
+        data = await request.json
+        print(f"Received data: {data}")
+        script = data.get("script")
+        if not script:
+            return jsonify({"error": "Topic is required"}), 400
+
+        # Call the asynchronous video generation function
+        srt_content = await generate_video_from_topic(script)
+        
+        video_path = os.path.join(os.path.dirname(__file__), 'output_video.mp4')
+
+        # Return the generated video
+        return srt_content
+
+    except Exception as e:
+        print(f"Error: {e}")
+        return jsonify({"error": str(e)}), 500
+    
+@app.route('/video', methods=['GET'])
+async def serve_video():
+    # Dynamically locate the video file relative to the script
+    video_path = os.path.join(os.path.dirname(__file__), 'output_video.mp4')
+    
+    # Check if the file exists
+    if not os.path.exists(video_path):
+        print(f"File not found at path: {video_path}")
+        return jsonify({"error": "Video file not found"}), 404
+    
+    # Serve the file if found
+    return await send_file(video_path, mimetype='video/mp4')
+
 if __name__ == '__main__':
-    app.run(debug=True, use_reloader=False)
+    app.run(debug=True)
