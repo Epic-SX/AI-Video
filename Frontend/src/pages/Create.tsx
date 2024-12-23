@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useRef} from "react";
 import Header from "../components/Header";
 import Size from "../components/Size";
 import Style from "../components/Style";
@@ -9,8 +9,10 @@ interface CreateProps {
   handleCloseModal: () => void; // Specify the type for handleCloseModal
 }
 
+
 function Create({ handleCloseModal }: CreateProps) {
   const [activeStep, setActiveStep] = useState(1);
+  const creationRef = useRef<{ handleScript: () => void }>(null);
 
   const handleNext = () => {
     if (activeStep < 3) setActiveStep(activeStep + 1);
@@ -21,7 +23,7 @@ function Create({ handleCloseModal }: CreateProps) {
   };
 
   const handleComplete = () => {
-    console.log("Process completed!");
+    creationRef.current?.handleScript();
   };
 
   const renderComponent = () => {
@@ -31,7 +33,7 @@ function Create({ handleCloseModal }: CreateProps) {
       case 2:
         return <Style />;
       case 3:
-        return <Creation />;
+        return <Creation ref={creationRef} />;
       default:
         return <Size />;
     }
