@@ -2,6 +2,7 @@ from quart import Quart, send_file, jsonify, request
 from quart_cors import cors
 from utility.video_generator import generate_video_from_topic
 from utility.script_generator import generate_script_from_topic
+from utility.script.topic_generator import generate_topic_from_style
 import os
 
 app = Quart(__name__)
@@ -17,8 +18,8 @@ async def generate_script():
         if not topic:
             return jsonify({"error": "Topic is required"}), 400
 
-        # Call the asynchronous script generation function
-        script = await generate_script_from_topic(topic)
+        # No 'await' here if generate_script_from_topic is synchronous
+        script =await generate_script_from_topic(topic)  # Remove await if not async
         
         return script
 
@@ -37,7 +38,7 @@ async def generate_video():
             return jsonify({"error": "Topic is required"}), 400
 
         # Call the asynchronous video generation function
-        srt_content = await generate_video_from_topic(script)
+        srt_content =await generate_video_from_topic(script)
         
         video_path = os.path.join(os.path.dirname(__file__), 'output_video.mp4')
 
@@ -54,17 +55,16 @@ async def generate_topic():
         # Await the JSON body from the request
         data = await request.json
         print(f"Received data: {data}")
-        script = data.get("script")
+        script = data
         if not script:
             return jsonify({"error": "Topic is required"}), 400
 
         # Call the asynchronous video generation function
-        srt_content = await generate_video_from_topic(script)
+        topic = generate_topic_from_style(script)
+        print(topic)
         
-        video_path = os.path.join(os.path.dirname(__file__), 'output_video.mp4')
-
         # Return the generated video
-        return srt_content
+        return topic
 
     except Exception as e:
         print(f"Error: {e}")

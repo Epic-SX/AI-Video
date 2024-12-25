@@ -11,7 +11,7 @@ OPENAI_API_KEY = os.getenv("OPENAI")
 model = "gpt-4o"
 client = OpenAI(api_key=OPENAI_API_KEY)
 
-def generate_script(topic):
+def generate_topic_from_style(topic):
     prompt = (
         """You are a seasoned content writer for a YouTube Shorts channel, specializing in facts videos. 
         Your facts shorts are concise, each lasting less than 50 seconds (approximately 140 words). 
@@ -21,11 +21,21 @@ def generate_script(topic):
 
         For instance, if the user asks for:
         
-        情報提供動画スタイル
-        この動画は自信を持って話し、時には質問を投げかけるスタイルです。
-        次のようなコンテンツを作成します。
-        日本驚くべき伝統文化, 中国の面白い食べ物習慣, タイの珍しいお祭りとその由来, インドの不思議な習慣と宗教行事, 日本の不思議な風習, アニメに隠されたメッセージ, 新しいカフェ文化のトレンド, 日本の伝説的な生き物たち
+        「情報提供動画スタイル」の場合は、「日本の素敵な伝統文化」と同じ形式で他の4～5個のテーマのみ作成してください。内容は必要ない。     
 
+        「こども向け学習動画スタイル」の場合は、「野菜の正しい洗い方 - 新鮮さを保とう！」と同じ形式で他の4～5個のテーマのみ作成してください。内容は必要ない。 
+               
+        「ホラー映像スタイル」の場合は、「夜中に電話してきた見知らぬ声の正体」と同じ形式で他の4～5個のテーマのみ作成してください。内容は必要ない。 
+        
+        「ドキュメンタリースタイル」の場合は、「気候変動の影響とその対策」と同じ形式で他の4～5個のテーマのみ作成してください。内容は必要ない。 
+        
+        「クオート動画スタイル」の場合は、「マハトマ・ガンジーの名言：真実と非暴力の力」と同じ形式で他の4～5個のテーマのみ作成してください。内容は必要ない。 
+  
+        「MBTI動画スタイル」の場合は、「ENFJのカリスマ性が際立つ瞬間」と同じ形式で他の4～5個のテーマのみ作成してください。内容は必要ない。 
+        
+        「製品プロモーションビデオのスタイル」の場合は、「収納が簡単で使いやすい多機能トラベルポーチ」と同じ形式で他の4～5個のテーマのみ作成してください。内容は必要ない。 
+        
+        
         Stictly output the script in a JSON format like below, and only provide a parsable JSON object with the key 'script'. 
 
         # Output

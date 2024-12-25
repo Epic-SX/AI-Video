@@ -2,18 +2,18 @@ import React, { createContext, useState, useContext } from 'react';
 
 interface VideoContextProps {
     srtContent: string;
-    styleNumber: number | undefined;  
+    styleTitle: string;  
     setSrtContent: React.Dispatch<React.SetStateAction<string>>;
-    setStyleNumber: React.Dispatch<React.SetStateAction<number | undefined>>;
+    setStyleTitle: React.Dispatch<React.SetStateAction<string>>;
 }
 
 const VideoContext = createContext<VideoContextProps | undefined>(undefined);
 
 export const VideoProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
     const [srtContent, setSrtContent] = useState<string>('');
-    const [styleNumber, setStyleNumber] = useState<number>();
+    const [styleTitle, setStyleTitle] = useState<string>('');
     return (
-        <VideoContext.Provider value={{ srtContent, setSrtContent, styleNumber, setStyleNumber }}>
+        <VideoContext.Provider value={{ srtContent, setSrtContent, styleTitle, setStyleTitle }}>
             {children}
         </VideoContext.Provider>
     );

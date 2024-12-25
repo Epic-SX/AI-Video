@@ -1,20 +1,29 @@
-import React, { useState, useRef} from "react";
+import React, { useState, useRef } from "react";
 import Header from "../components/Header";
 import Size from "../components/Size";
 import Style from "../components/Style";
 import Creation from "../components/Creation";
+import { useVideoContext } from "../context/VideoContext";
 
-// Define an interface for the props
 interface CreateProps {
-  handleCloseModal: () => void; // Specify the type for handleCloseModal
+  handleCloseModal: () => void;
 }
-
 
 function Create({ handleCloseModal }: CreateProps) {
   const [activeStep, setActiveStep] = useState(1);
-  const creationRef = useRef<{ handleScript: () => void }>(null);
+  const [selectedStyle, setSelectedStyle] = useState<string>("youtube"); // Persisted state for Size
+  const [selectedCard, setSelectedCard] = useState<number>(1); // Default to the first style (id = 1)
+  const creationRef = useRef<{ handleScript: () => void; handleTopic: () => void }>(null);
+  const {styleTitle } = useVideoContext();
+
+  const handleStyleComplete = () => {
+    creationRef.current?.handleTopic();
+  };
 
   const handleNext = () => {
+    if (activeStep === 2 && styleTitle!=="スタイルなしで始める") {
+      handleStyleComplete();
+    }
     if (activeStep < 3) setActiveStep(activeStep + 1);
   };
 
@@ -26,23 +35,20 @@ function Create({ handleCloseModal }: CreateProps) {
     creationRef.current?.handleScript();
   };
 
-  const renderComponent = () => {
-    switch (activeStep) {
-      case 1:
-        return <Size />;
-      case 2:
-        return <Style />;
-      case 3:
-        return <Creation ref={creationRef} />;
-      default:
-        return <Size />;
-    }
-  };
-
   return (
     <div>
       <Header activeStep={activeStep} onClose={handleCloseModal} />
-      {renderComponent()}
+      <div>
+        {activeStep === 1 && (
+          <Size selected={selectedStyle} setSelected={setSelectedStyle} />
+        )}
+        {activeStep === 2 && (
+          <Style selectedCard={selectedCard} setSelectedCard={setSelectedCard} />
+        )}
+        <div style={{ display: activeStep === 3 ? "block" : "none" }}>
+          <Creation ref={creationRef} />
+        </div>
+      </div>
       <div className="w-4/1 flex gap-4 items-end justify-end pb-5 absolute bottom-3 right-48">
         <button
           className="px-8 py-2 bg-[#eefcfd] hover:bg-[#cbeff1] rounded-lg text-[#24B7D0]"

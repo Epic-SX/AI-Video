@@ -29,9 +29,6 @@ const StyleCard: React.FC<CardProps> = ({
       </div>
       {/* Title Section */}
       <h3 className="text-lg font-bold text-left text-gray-800 flex items-center gap-2 mb-2">
-        <span role="img" aria-label="icon">
-          🐰
-        </span>
         {title}
       </h3>
       {/* Description Section */}

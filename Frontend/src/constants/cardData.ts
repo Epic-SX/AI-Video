@@ -18,31 +18,31 @@ export const cardData = [
     {
       id: 2,
       image: card2 , // Replace with the actual image URL
-      title: "情報提供動画スタイル",
+      title: "📚情報提供動画スタイル",
       description: "この動画は自信を持って話し、時には質問を投げかけるスタイルです。",
     },
     {
       id: 3,
       image: card3 , // Replace with the actual image URL
-      title: "こども向け学習動画スタイル",
+      title: "🧒こども向け学習動画スタイル",
       description: "このスクリプトは、子供たちがさまざまな知識に簡単で楽しいアクセスを得ることができます。",
     },
     {
       id: 4,
       image: card4, // Replace with the actual image URL
-      title: "ホラー映像スタイル",
+      title: "🎃ホラー映像スタイル",
       description: "怖い話を伝えるビデオを作成します。",
     },
     {
       id: 5,
       image: card5, // Replace with the actual image URL
-      title: "ドキュメンタリースタイル",
+      title: "🎓ドキュメンタリースタイル",
       description: "ドキュメンタリースタイルで状況を説明する情報ビデオに適しています。",
     },
     {
       id: 6,
       image:card6, // Replace with the actual image URL
-      title: "クオート動画スタイル",
+      title: "🧘🏻‍♂️ クオート動画スタイル",
       description: "有名な名言を朗読する動画を作成します。",
     },
     {
