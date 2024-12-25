@@ -2,6 +2,8 @@ import React, { useState, useRef, forwardRef, useImperativeHandle } from "react"
 import axios from "axios";
 import { useVideoContext } from "../context/VideoContext"
 import ToggleSwitch from "./utils/ToggleSwitch";
+import Spinner from "./utils/Spiner";
+import Loading from "./utils/Loading";
 import { HiMiniQuestionMarkCircle } from "react-icons/hi2";
 import { FaWandMagicSparkles } from "react-icons/fa6";
 import { PiStarFourFill } from "react-icons/pi";
@@ -15,14 +17,17 @@ import tts from "../assets/image/ic_ttv_option_tts-DWELf0eR.svg";
 import image from "../assets/image/ic_ttv_option_image-96eMZhIZ.svg";
 import media from "../assets/image/ic_ttv_option_bgm-sf29aAVo.svg"
 
-const Creation =  forwardRef((_, ref) => {
+const Creation = forwardRef((_, ref) => {
   const [inputValue, setInputValue] = useState<{ topic: string }>({ topic: '' });
   const [gptType, setGptType] = useState<string>("gpt_3.5");
+  const [arrayTopic, setArryTopic] = useState<string[]>([])
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
+  const [spinner, setSpinner] = useState(false);
+  const [loadingVideo, setLoadingVideo] = useState(false);
   const [response, setResponse] = useState<{ script?: string } | null>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
-  const { setSrtContent } = useVideoContext();
+  const { setSrtContent, styleTitle } = useVideoContext();
 
   // Handle input changes with proper type annotations
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -31,7 +36,7 @@ const Creation =  forwardRef((_, ref) => {
 
   const handleCreate = (e: React.MouseEvent<HTMLButtonElement>) => {
     setError(null);
-    setLoading(true);
+    setSpinner(true);
     const apiUrl = `${process.env.REACT_APP_API_BASE_URL}/api/generate-script`;
     axios
       .post(apiUrl, inputValue, {
@@ -44,7 +49,7 @@ const Creation =  forwardRef((_, ref) => {
           ...prev,
           script: res.data,
         }));
-        setLoading(false);
+        setSpinner(false);
         console.log('Success:', res);
       })
       .catch((error) => {
@@ -52,9 +57,9 @@ const Creation =  forwardRef((_, ref) => {
       });
   };
 
-  const handleScript =(e: React.MouseEvent<HTMLButtonElement>) =>{
+  const handleScript = (e: React.MouseEvent<HTMLButtonElement>) => {
     setError(null);
-    setLoading(true);
+    setSpinner(true);
     const apiUrl = `${process.env.REACT_APP_API_BASE_URL}/api/generate-video`;
     axios
       .post(apiUrl, response, {
@@ -64,7 +69,7 @@ const Creation =  forwardRef((_, ref) => {
       })
       .then((res) => {
         setSrtContent(res.data);
-        setLoading(false);
+        setSpinner(false);
         console.log('Success:', res);
       })
       .catch((error) => {
@@ -72,8 +77,46 @@ const Creation =  forwardRef((_, ref) => {
       });
   }
 
+  const handleTopic = (e: React.MouseEvent<HTMLButtonElement>) => {
+    setError(null);
+    setLoading(true);
+
+    const apiUrl = `${process.env.REACT_APP_API_BASE_URL}/api/generate-topic`;
+    axios
+      .post(apiUrl, styleTitle, {
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      })
+      .then((res) => {
+        console.log(res.data)
+        if (Array.isArray(res.data)) {
+          // If res.data is already an array, directly set it
+          setArryTopic(res.data);
+        } else {
+          // If res.data is a string, process it and split into an array
+          const topics = res.data
+            .split(/「|」\s+|、|\n|,/)  // Split the string into an array of lines
+            .map((line: string) =>
+              line.replace(/^\d+\.\s*/, '') // Remove leading numbers followed by a dot and whitespace
+                .replace(/^・/, '') // Remove leading ・
+                .replace(/[「」]/g, '') // Remove 「」 characters
+                .trim() // Trim any whitespace
+            )
+            .filter((line: string) => line); // Filter out any empty lines
+
+          setArryTopic(topics); // Set the processed array
+          console.log('Success:', topics);
+        }
+        setLoading(false);
+      })
+      .catch((error) => {
+        console.error('Error:', error);
+      });
+  }
+
   useImperativeHandle(ref, () => ({
-    handleScript,
+    handleScript, handleTopic
   }));
 
   const handleScriptChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
@@ -89,28 +132,17 @@ const Creation =  forwardRef((_, ref) => {
     }
   };
 
-  console.log("-------->>>>><<<<<--------",response)
 
   const handleGptTypeChange = (e: React.ChangeEvent<HTMLSelectElement>) =>
     setGptType(e.target.value);
 
-  const topics = [
-    "世界最古の建造物が隠す秘密",
-    "未解決の失踪事件: 謎の行方はどこに?",
-    "驚くべき都市伝説: 本当に起",
-    "未来の技術革新と私たちの生活",
-    "失われた文明の神秘",
-    "宇宙における生命の可能性",
-    "地球の自然現象の謎",
-    "古代の戦争戦術の教訓",
-  ];
 
   return (
     <div className="w-full font-sans min-h-[calc(100vh-82px)] flex bg-gray-50">
       <div className="w-5/6  px-10 py-6">
         {/* Title and Description */}
         <div className="flex gap-3">
-          <p className="font-bold text-xl">情報提供動画スタイル</p>
+          <p className="font-bold text-xl">{styleTitle}</p>
           <p className="text-gray-400">
             この動画は自信を持って話し、時には質問を投げかけるスタイルです。
           </p>
@@ -156,55 +188,81 @@ const Creation =  forwardRef((_, ref) => {
         </div>
 
         {/* Recommended Topics Section */}
-        <div className="pt-4 flex items-center gap-2">
-          <div className="flex items-center text-[#937FC2] font-bold">
-            <PiStarFourFill />
-            <p className="pl-1">おすすめのテーマ</p>
+        {styleTitle !== "スタイルなしで始める" &&
+          <div className="pt-4 flex items-center gap-2">
+            {!loading &&
+              <div className="flex items-center text-[#937FC2] font-bold">
+                <PiStarFourFill />
+                <p className="pl-1">おすすめのテーマ</p>
+              </div>
+            }
+
+
+            <div className="w-[80%] h-11 flex items-end gap-2 overflow-x-auto whitespace-nowrap">
+              {loading ? (
+                <div className="flex p-2 items-center">
+                  <p>{styleTitle}に適したテーマを検索中です。10~20秒程度お待ちください。</p>
+                  <Spinner />
+                </div>
+              ) : (
+                arrayTopic.map((topic, index) => (
+                  <p
+                    key={index}
+                    className="p-2 border rounded-md inline-block text-sm hover:cursor-pointer"
+                    onClick={() => setInputValue({ topic })}
+                  >
+                    {topic}
+                  </p>
+                ))
+              )}
+            </div>
+            {!loading &&
+              <div>
+                <button
+                  className="bg-gray-200 hover:bg-gray-300 p-2 rounded-md flex justify-center gap-2 items-center text-gray-600 whitespace-nowrap"
+                  aria-label="AIで作文"
+                  onClick={handleTopic}
+                >
+                  <FiRefreshCw className="text-gray-600 text-lg" />
+                  <p>更新</p>
+                </button>
+              </div>
+            }
+
           </div>
-          <div className="w-[80%] flex items-end gap-2 overflow-x-auto whitespace-nowrap">
-            {topics.map((topic, index) => (
-              <p
-                key={index}
-                className="p-2 border rounded-md inline-block text-sm hover:cursor-pointer"
-                onClick={() => setInputValue({ topic })}
-              >
-                {topic}
-              </p>
-            ))}
-          </div>
-          <div>
-            <button
-              className="bg-gray-200 hover:bg-gray-300 p-2 rounded-md flex justify-center gap-2 items-center text-gray-600 whitespace-nowrap"
-              aria-label="AIで作文"
-            >
-              <FiRefreshCw className="text-gray-600 text-lg" />
-              <p>更新</p>
-            </button>
-          </div>
-        </div>
+        }
 
         <div className="pt-4 ">
           <p className="font-bold">台本</p>
           {response ? (
+            spinner ? (
+              <div className="absolute top-[60%] right-[55%]">
+                <Loading />
+              </div>
+            ) : (
+              <div className="border-[1px] mt-4 w-full bg-white rounded-md border-gray-100">
+                <textarea
+                  ref={textareaRef}
+                  className="focus:outline-none p-3 w-full h-[480px] resize-none"
+                  value={response.script}
+                  onChange={handleScriptChange}
+                ></textarea>
+                <button
+                  onClick={handleFocusTextarea}
+                  className="p-2 m-2 rounded-md flex hover:bg-gray-100 border-gray-100 border-[1px] justify-center gap-2 items-center text-gray-600"
+                  aria-label="AIで作文"
+                >
+                  <LuArrowRightFromLine className="text-gray-600 text-lg" />
+                  <p>続きを書く</p>
+                </button>
+              </div>
+            )
+          ) : (
             <div className="border-[1px] mt-4 w-full bg-white rounded-md border-gray-100">
               <textarea
                 ref={textareaRef}
                 className="focus:outline-none p-3 w-full h-[480px] resize-none"
-                value={response.script}
-                onChange={handleScriptChange}
               ></textarea>
-              <button
-                onClick={handleFocusTextarea}
-                className="p-2 m-2 rounded-md flex hover:bg-gray-100 border-gray-100 border-[1px] justify-center gap-2 items-center text-gray-600"
-                aria-label="AIで作文"
-              >
-                <LuArrowRightFromLine className="text-gray-600 text-lg" />
-                <p>続きを書く</p>
-              </button>
-            </div>
-          ) : (
-            <div className="border-[1px] mt-4 w-full bg-white rounded-md border-gray-100">
-              <textarea ref={textareaRef} className="focus:outline-none  p-3 w-full h-[480px] resize-none "></textarea>
               <button
                 className="p-2 m-2 rounded-md flex hover:bg-gray-100 border-gray-100 border-[1px] justify-center gap-2 items-center text-gray-600"
                 aria-label="AIで作文"

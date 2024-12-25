@@ -2,18 +2,21 @@ import React, { useState } from "react";
 import { HiMiniQuestionMarkCircle } from "react-icons/hi2";
 import StyleCard from "./utils/StyleCard";
 import { cardData } from "../constants/cardData";
-import { useVideoContext } from "../context/VideoContext" 
+import { useVideoContext } from "../context/VideoContext";
 
-export default function Style() {
-  const [activeButton,  setActiveButton] = useState<null | string>("動画スタイル");
-  const [selectedCard, setSelectedCard] = useState<null | number>(0); // Update type to match card.id
-  const {setStyleNumber} = useVideoContext();
+interface StyleProps {
+  selectedCard: number; // Passed from Create.tsx
+  setSelectedCard: (id: number) => void; // Setter from Create.tsx
+}
 
-  const handleStyle = (id:number)=>{
-    setSelectedCard(id);
-    setStyleNumber(id);
-    console.log(id)
-  }
+export default function Style({ selectedCard, setSelectedCard }: StyleProps) {
+  const [activeButton, setActiveButton] = useState<null | string>("動画スタイル");
+  const { setStyleTitle } = useVideoContext();
+
+  const handleStyle = (id: number, title: string) => {
+    setSelectedCard(id); // Update parent state
+    setStyleTitle(title);
+  };
 
   return (
     <div className="w-full font-sans min-h-[calc(100vh-82px)] relative bg-gray-50">
@@ -52,15 +55,15 @@ export default function Style() {
         <div className="w-3/4 mt-8 pr-2 overflow-y-auto h-[700px]">
           {activeButton === "動画スタイル" && (
             <div className="grid lg:grid-cols-2 xl:grid-cols-3 gap-4">
-              {cardData.map((card,index) => (
+              {cardData.map((card, index) => (
                 <StyleCard
                   key={card.id}
                   id={card.id}
                   image={card.image}
                   title={card.title}
                   description={card.description}
-                  isSelected={selectedCard === card.id} // Check if selected
-                  onClick={() => handleStyle(index+1)} // Set selected card
+                  isSelected={selectedCard === index+1} // Check if selected
+                  onClick={() => handleStyle(card.id, card.title)} // Set selected card
                 />
               ))}
             </div>
