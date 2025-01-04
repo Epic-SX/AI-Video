@@ -3,9 +3,10 @@ import create from "../assets/image/ic_startmode-BuGMTegX.svg";
 import FontSizeSelector from "./utils/FontSize";
 import ColorPicker from "./utils/ColorPicker";
 import Create from "../pages/Create"; // Import Create component
+import { useVideoContext } from "../context/VideoContext"
 
 export default function MenuBar() {
-  const [isModalOpen, setIsModalOpen] = useState(false); // State to manage modal visibility
+  const { isModalOpen, setIsModalOpen } = useVideoContext(); // State to manage modal visibility
 
   // Handle opening and closing of the modal
   const handleCreateClick = () => {

@@ -3,7 +3,7 @@ import axios from "axios";
 import { useVideoContext } from "../context/VideoContext"
 import ToggleSwitch from "./utils/ToggleSwitch";
 import Spinner from "./utils/Spiner";
-import Loading from "./utils/Loading";
+import LinearDeterminate from "./utils/Loading";
 import { HiMiniQuestionMarkCircle } from "react-icons/hi2";
 import { FaWandMagicSparkles } from "react-icons/fa6";
 import { PiStarFourFill } from "react-icons/pi";
@@ -24,10 +24,11 @@ const Creation = forwardRef((_, ref) => {
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [spinner, setSpinner] = useState(false);
-  const [loadingVideo, setLoadingVideo] = useState(false);
+  const [validateScript, setValidateScript] = useState(false);
+  const [validateTopic, setValidateTopic] = useState(false);
   const [response, setResponse] = useState<{ script?: string } | null>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
-  const { setSrtContent, styleTitle } = useVideoContext();
+  const { setSrtContent, styleTitle, setIsModalOpen } = useVideoContext();
 
   // Handle input changes with proper type annotations
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -35,46 +36,59 @@ const Creation = forwardRef((_, ref) => {
   };
 
   const handleCreate = (e: React.MouseEvent<HTMLButtonElement>) => {
-    setError(null);
-    setSpinner(true);
-    const apiUrl = `${process.env.REACT_APP_API_BASE_URL}/api/generate-script`;
-    axios
-      .post(apiUrl, inputValue, {
-        headers: {
-          'Content-Type': 'application/json',
-        },
-      })
-      .then((res) => {
-        setResponse((prev) => ({
-          ...prev,
-          script: res.data,
-        }));
-        setSpinner(false);
-        console.log('Success:', res);
-      })
-      .catch((error) => {
-        console.error('Error:', error);
-      });
+    if (inputValue.topic === "") {
+      setValidateTopic(true)
+    }
+    else {
+      setSpinner(true);
+      setValidateTopic(false)
+      const apiUrl = `${process.env.REACT_APP_API_BASE_URL}/api/generate-script`;
+      axios
+        .post(apiUrl, inputValue, {
+          headers: {
+            'Content-Type': 'application/json',
+          },
+        })
+        .then((res) => {
+          setResponse((prev) => ({
+            ...prev,
+            script: res.data,
+          }));
+          setSpinner(false);
+          console.log('Success:', res);
+        })
+        .catch((error) => {
+          console.error('Error:', error);
+        });
+    }
+
   };
 
   const handleScript = (e: React.MouseEvent<HTMLButtonElement>) => {
-    setError(null);
-    setSpinner(true);
-    const apiUrl = `${process.env.REACT_APP_API_BASE_URL}/api/generate-video`;
-    axios
-      .post(apiUrl, response, {
-        headers: {
-          'Content-Type': 'application/json',
-        },
-      })
-      .then((res) => {
-        setSrtContent(res.data);
-        setSpinner(false);
-        console.log('Success:', res);
-      })
-      .catch((error) => {
-        console.error('Error:', error);
-      });
+    if(!response?.script){
+      setValidateScript(true)
+    }
+    else{
+      setValidateScript(false)
+      setSpinner(true);
+      const apiUrl = `${process.env.REACT_APP_API_BASE_URL}/api/generate-video`;
+      axios
+        .post(apiUrl, response, {
+          headers: {
+            'Content-Type': 'application/json',
+          },
+        })
+        .then((res) => {
+          setSrtContent(res.data);
+          setSpinner(false);
+          setIsModalOpen(false);
+          console.log('Success:', res);
+        })
+        .catch((error) => {
+          console.error('Error:', error);
+        });
+    }
+    
   }
 
   const handleTopic = (e: React.MouseEvent<HTMLButtonElement>) => {
@@ -149,8 +163,9 @@ const Creation = forwardRef((_, ref) => {
         </div>
 
         {/* Theme Input */}
-        <div className="py-2">
+        <div className="py-2 flex gap-1 items-center">
           <p className="font-bold">テーマ</p>
+          {validateTopic&&<p className="text-[14px] text-[#F8866C] font-bold ">内容を入力してください。</p>}
         </div>
         <div className="flex w-full items-center gap-3">
           <div className="border w-full flex items-center justify-between rounded-md">
@@ -233,12 +248,14 @@ const Creation = forwardRef((_, ref) => {
         }
 
         <div className="pt-4 ">
+          <div className="flex items-center gap-1">
           <p className="font-bold">台本</p>
+          {validateScript&&<p className="text-[14px] text-[#F8866C] font-bold ">内容を入力してください。</p>}
+          </div>
           {response ? (
             spinner ? (
-              <div className="absolute top-[60%] right-[55%]">
-                <Loading />
-              </div>
+              <LinearDeterminate />
+
             ) : (
               <div className="border-[1px] mt-4 w-full bg-white rounded-md border-gray-100">
                 <textarea

@@ -6,12 +6,10 @@ from moviepy.editor import VideoFileClip, ImageClip, CompositeVideoClip, ColorCl
 import whisper
 import srt
 from datetime import timedelta
-from PIL import Image, ImageDraw, ImageFont
 import numpy as np
 from tqdm import tqdm
 import tiktoken
-import textwrap
-import argparse
+
 
 class Config:
     # Paths
