@@ -21,13 +21,15 @@ const Creation = forwardRef((_, ref) => {
   const [inputValue, setInputValue] = useState<{ topic: string }>({ topic: '' });
   const [gptType, setGptType] = useState<string>("gpt_3.5");
   const [arrayTopic, setArryTopic] = useState<string[]>([])
-  const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [spinner, setSpinner] = useState(false);
   const [validateScript, setValidateScript] = useState(false);
   const [validateTopic, setValidateTopic] = useState(false);
   const [response, setResponse] = useState<{ script?: string } | null>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
+  const [abortController, setAbortController] = useState<AbortController | null>(
+    null
+  );
   const { setSrtContent, styleTitle, setIsModalOpen } = useVideoContext();
 
   // Handle input changes with proper type annotations
@@ -42,12 +44,15 @@ const Creation = forwardRef((_, ref) => {
     else {
       setSpinner(true);
       setValidateTopic(false)
+      const controller = new AbortController();
+      setAbortController(controller);
       const apiUrl = `${process.env.REACT_APP_API_BASE_URL}/api/generate-script`;
       axios
         .post(apiUrl, inputValue, {
           headers: {
             'Content-Type': 'application/json',
           },
+          signal: controller.signal,
         })
         .then((res) => {
           setResponse((prev) => ({
@@ -64,11 +69,20 @@ const Creation = forwardRef((_, ref) => {
 
   };
 
+  const handleAbort = () => {
+    if (abortController) {
+      abortController.abort();
+      setAbortController(null); // Clean up the abort controller
+      setSpinner(false); // Update UI to reflect cancellation
+      console.log("Request aborted.");
+    }
+  };
+
   const handleScript = (e: React.MouseEvent<HTMLButtonElement>) => {
-    if(!response?.script){
+    if (!response?.script) {
       setValidateScript(true)
     }
-    else{
+    else {
       setValidateScript(false)
       setSpinner(true);
       const apiUrl = `${process.env.REACT_APP_API_BASE_URL}/api/generate-video`;
@@ -88,13 +102,11 @@ const Creation = forwardRef((_, ref) => {
           console.error('Error:', error);
         });
     }
-    
+
   }
 
   const handleTopic = (e: React.MouseEvent<HTMLButtonElement>) => {
-    setError(null);
     setLoading(true);
-
     const apiUrl = `${process.env.REACT_APP_API_BASE_URL}/api/generate-topic`;
     axios
       .post(apiUrl, styleTitle, {
@@ -165,7 +177,7 @@ const Creation = forwardRef((_, ref) => {
         {/* Theme Input */}
         <div className="py-2 flex gap-1 items-center">
           <p className="font-bold">テーマ</p>
-          {validateTopic&&<p className="text-[14px] text-[#F8866C] font-bold ">内容を入力してください。</p>}
+          {validateTopic && <p className="text-[14px] text-[#F8866C] font-bold ">内容を入力してください。</p>}
         </div>
         <div className="flex w-full items-center gap-3">
           <div className="border w-full flex items-center justify-between rounded-md">
@@ -249,31 +261,30 @@ const Creation = forwardRef((_, ref) => {
 
         <div className="pt-4 ">
           <div className="flex items-center gap-1">
-          <p className="font-bold">台本</p>
-          {validateScript&&<p className="text-[14px] text-[#F8866C] font-bold ">内容を入力してください。</p>}
+            <p className="font-bold">台本</p>
+            {validateScript && <p className="text-[14px] text-[#F8866C] font-bold ">内容を入力してください。</p>}
           </div>
-          {response ? (
-            spinner ? (
-              <LinearDeterminate />
-
-            ) : (
-              <div className="border-[1px] mt-4 w-full bg-white rounded-md border-gray-100">
-                <textarea
-                  ref={textareaRef}
-                  className="focus:outline-none p-3 w-full h-[480px] resize-none"
-                  value={response.script}
-                  onChange={handleScriptChange}
-                ></textarea>
-                <button
-                  onClick={handleFocusTextarea}
-                  className="p-2 m-2 rounded-md flex hover:bg-gray-100 border-gray-100 border-[1px] justify-center gap-2 items-center text-gray-600"
-                  aria-label="AIで作文"
-                >
-                  <LuArrowRightFromLine className="text-gray-600 text-lg" />
-                  <p>続きを書く</p>
-                </button>
-              </div>
-            )
+          {spinner ? (
+            <div className=" absolute top-[50%] left-[30%]">
+              <LinearDeterminate onCancel={handleAbort} />
+            </div>
+          ) : response ? (
+            <div className="border-[1px] mt-4 w-full bg-white rounded-md border-gray-100">
+              <textarea
+                ref={textareaRef}
+                className="focus:outline-none p-3 w-full h-[480px] resize-none"
+                value={response.script}
+                onChange={handleScriptChange}
+              ></textarea>
+              <button
+                onClick={handleFocusTextarea}
+                className="p-2 m-2 rounded-md flex hover:bg-gray-100 border-gray-100 border-[1px] justify-center gap-2 items-center text-gray-600"
+                aria-label="AIで作文"
+              >
+                <LuArrowRightFromLine className="text-gray-600 text-lg" />
+                <p>続きを書く</p>
+              </button>
+            </div>
           ) : (
             <div className="border-[1px] mt-4 w-full bg-white rounded-md border-gray-100">
               <textarea

@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React from "react";
 import create from "../assets/image/ic_startmode-BuGMTegX.svg";
 import FontSizeSelector from "./utils/FontSize";
 import ColorPicker from "./utils/ColorPicker";
