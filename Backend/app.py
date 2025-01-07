@@ -70,17 +70,22 @@ async def generate_topic():
         print(f"Error: {e}")
         return jsonify({"error": str(e)}), 500
     
-@app.route('/video', methods=['GET'])
+@app.route('/api/video', methods=['POST'])  # Changed to POST to handle dynamic requests
 async def serve_video():
-    # Dynamically locate the video file relative to the script
-    video_path = os.path.join(os.path.dirname(__file__), 'output_video.mp4')
+    data = await request.get_json()  # Parse JSON input
+    srt_content = data.get("srtContent")  # Extract `srtContent`
+
+    if not srt_content:
+        return jsonify({"error": "srtContent is required"}), 400
+
+    # Example: Generate or locate a video based on srtContent
+    video_path = os.path.join(os.path.dirname(__file__), 'output_video.mp4')  # Replace with dynamic generation logic
     
-    # Check if the file exists
+    # For demonstration, we'll just check for a static file
     if not os.path.exists(video_path):
-        print(f"File not found at path: {video_path}")
         return jsonify({"error": "Video file not found"}), 404
-    
-    # Serve the file if found
+
+    # Return the video file
     return await send_file(video_path, mimetype='video/mp4')
 
 if __name__ == '__main__':

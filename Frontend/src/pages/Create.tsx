@@ -13,15 +13,15 @@ function Create({ handleCloseModal }: CreateProps) {
   const [activeStep, setActiveStep] = useState(1);
   const [selectedStyle, setSelectedStyle] = useState<string>("youtube"); // Persisted state for Size
   const [selectedCard, setSelectedCard] = useState<number>(1); // Default to the first style (id = 1)
-  const creationRef = useRef<{ handleScript: () => void; handleTopic: () => void }>(null);
-  const {styleTitle } = useVideoContext();
+  const creationRef = useRef<{ completeModal: () => void; handleTopic: () => void }>(null);
+  const { styleTitle, videoLoading } = useVideoContext();
 
   const handleStyleComplete = () => {
     creationRef.current?.handleTopic();
   };
 
   const handleNext = () => {
-    if (activeStep === 2 && styleTitle!=="スタイルなしで始める") {
+    if (activeStep === 2 && styleTitle !== "スタイルなしで始める") {
       handleStyleComplete();
     }
     if (activeStep < 3) setActiveStep(activeStep + 1);
@@ -32,7 +32,7 @@ function Create({ handleCloseModal }: CreateProps) {
   };
 
   const handleComplete = () => {
-    creationRef.current?.handleScript();
+    creationRef.current?.completeModal();
   };
 
   return (
@@ -50,15 +50,15 @@ function Create({ handleCloseModal }: CreateProps) {
         </div>
       </div>
       <div className="w-4/1 flex gap-4 items-end justify-end pb-5 absolute bottom-3 right-48">
-        <button
-          className="px-8 py-2 bg-[#eefcfd] hover:bg-[#cbeff1] rounded-lg text-[#24B7D0]"
-          onClick={handlePrev}
-          disabled={activeStep === 1}
-        >
-          前へ
-        </button>
-
-        {activeStep < 3 ? (
+        {!videoLoading &&
+          <button
+            className="px-8 py-2 bg-[#eefcfd] hover:bg-[#cbeff1] rounded-lg text-[#24B7D0]"
+            onClick={handlePrev}
+            disabled={activeStep === 1}
+          >
+            前へ
+          </button>}
+        {!videoLoading && (activeStep < 3 ? (
           <button
             className="px-8 py-2 bg-[#24B7D0] hover:bg-[#2092a7] rounded-lg text-white"
             onClick={handleNext}
@@ -73,7 +73,8 @@ function Create({ handleCloseModal }: CreateProps) {
           >
             完了
           </button>
-        )}
+        ))}
+
       </div>
     </div>
   );
