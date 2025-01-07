@@ -2,9 +2,12 @@ import React from 'react';
 import MenuBar from '../components/MenuBar';
 import VideoDisplay from '../components/utils/VideoDisplay';
 import Clip from '../components/utils/Clip';
-import { clipsData } from '../constants/clipData';
+import { useVideoContext } from "../context/VideoContext"
 
 export default function Main() {
+    const { tokenObj } = useVideoContext(); // Convert SRT content to clipData
+    console.log(tokenObj[1].content)
+
     return (
         <div className="w-full h-full font-sans">
             <MenuBar />
@@ -30,7 +33,7 @@ export default function Main() {
                     </div>
                 </div>
                 <div className="w-5/6 min-h-[calc(100vh-82px)] bg-gray-100 pt-5 flex flex-col items-center gap-4">
-                    {clipsData.map((clip, index) => (
+                    {tokenObj.map((clip, index) => (
                         <Clip key={index} title={clip.title} content={clip.content} index={index + 1} />
                     ))}
                 </div>

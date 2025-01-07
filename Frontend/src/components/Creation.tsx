@@ -32,7 +32,7 @@ const Creation = forwardRef((_, ref) => {
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [isCompleteModalVisible, setIsCompleteModalVisible] = useState(false);
   const [isConfirmed, setIsConfirmed] = useState(false); // Add a state to track confirmation
-  const { setSrtContent, styleTitle, setIsModalOpen, videoLoading, setVideoLoading } = useVideoContext();
+  const { setSrtContent, styleTitle, setIsModalOpen, videoLoading, setVideoLoading, setTokenObj } = useVideoContext();
 
   // Handle input changes with proper type annotations
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -53,7 +53,12 @@ const Creation = forwardRef((_, ref) => {
   };
 
   const completeModal = () =>{
-    setIsCompleteModalVisible(true);
+    if (!response?.script) {
+      setValidateScript(true)
+    }else{
+
+      setIsCompleteModalVisible(true);
+    }
   }
 
   const handleCompleteModalConfirm = (e: React.MouseEvent<HTMLButtonElement>) => {
@@ -139,7 +144,9 @@ const Creation = forwardRef((_, ref) => {
           },
         })
         .then((res) => {
-          setSrtContent(res.data);
+          
+          setSrtContent(res.data.srt_content);
+          setTokenObj(res.data.token_obj);
           setVideoLoading(false);
           setIsModalOpen(false);
           console.log('Success:', res);

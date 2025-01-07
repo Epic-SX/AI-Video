@@ -13,10 +13,8 @@ async def generate_video_from_topic(script):
     AUDIO_FILE = "audio_tts.wav"
 
     try:
-               # Step 2: Generate audio
         await generate_audio(script, SAMPLE_FILE_NAME)
 
-        # Step 3: Generate timed captions
         caption_generator = SRTGenerator(
             video_path=SAMPLE_FILE_NAME,
             output_srt=OUTPUT_SRT_PATH,
@@ -26,16 +24,12 @@ async def generate_video_from_topic(script):
         srt_content = caption_generator.run()
         print(f"Generated SRT content:\n{srt_content}")
 
-        # Step 4: Parse the SRT file
         prompts = parse_srt_file(OUTPUT_SRT_PATH)
 
-        # Step 5: Generate images
         image_urls = image_generator(prompts, image_size="1024x1024")
 
-        # Step 6: Generate the final video
         output_video_path = get_final_video(image_urls, AUDIO_FILE)
 
-        # Return the video file as a response
         return srt_content
 
     except Exception as e:

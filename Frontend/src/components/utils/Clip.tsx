@@ -47,7 +47,7 @@ const Clip: React.FC<SimpleCardProps> = ({ title, content, index }) => {
             </div>
             <div className="w-full">
                 <div
-                    className={`flex p-2 h-14 rounded-tr-xl items-center bg-white gap-40 border-b-[1px] ${
+                    className={`flex p-2 h-20 rounded-tr-xl items-center bg-white gap-40 border-b-[1px] ${
                         isActive ? 'border-[#24b7d0]' : 'border-gray-200'
                     }`}
                 >
@@ -75,10 +75,12 @@ const Clip: React.FC<SimpleCardProps> = ({ title, content, index }) => {
                 </div>
                 <div className="h-14 bg-gray-50 rounded-br-xl flex gap-2 pl-[20%] items-center">
                     <img src={caption} alt="caption" className="w-6 h-6" />
-                    {isEditing ? (
+                    <p className=" rounded-md px-2 py-1 text-[#166E7d] focus:outline-none focus:border-[1px] focus:border-[#166E7d] w-2/3">{content}</p>
+
+                    {/* {isEditing ? (
                         <input
                             type="text"
-                            value={editableContent}
+                            value={content}
                             onChange={handleInputChange}
                             onBlur={handleInputBlur}
                             autoFocus
@@ -91,7 +93,7 @@ const Clip: React.FC<SimpleCardProps> = ({ title, content, index }) => {
                         >
                             {editableContent}
                         </p>
-                    )}
+                    )} */}
                 </div>
             </div>
         </div>

@@ -54,3 +54,7 @@ openai
 python-dotenv
 edge-tts
 openai-whisper
+sudachipy
+sudachidict_core
+sudachidict-full
+

@@ -38,12 +38,18 @@ async def generate_video():
             return jsonify({"error": "Topic is required"}), 400
 
         # Call the asynchronous video generation function
-        srt_content =await generate_video_from_topic(script)
+        result =await generate_video_from_topic(script)
+        
+        srt_content = result.get('srt_content')
+        token_obj = result.get('token_obj')
         
         video_path = os.path.join(os.path.dirname(__file__), 'output_video.mp4')
 
         # Return the generated video
-        return srt_content
+        return jsonify({
+            "srt_content": srt_content,
+            "token_obj": token_obj
+        })
 
     except Exception as e:
         print(f"Error: {e}")

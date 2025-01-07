@@ -9,6 +9,8 @@ from datetime import timedelta
 import numpy as np
 from tqdm import tqdm
 import tiktoken
+from sudachipy import tokenizer, dictionary
+import re
 
 
 class Config:
@@ -67,9 +69,10 @@ class SRTGenerator(SubtitleProcessor):
             transcription = self.transcribe_audio()
             chunks = self.split_into_chunks(transcription)
             results = self.process_chunks(chunks)
-            srt_content = self.create_srt(results)  # Capture the SRT content here.
+            srt_content = self.create_srt(results)
+            token_obj = self.tokenize_text(srt_content)
             logger.info(f"SRT file has been generated: {self.srt_path}")
-            return srt_content  # Return the SRT content.
+            return {'srt_content': srt_content, 'token_obj': token_obj}  # Return the SRT content.
         finally:
             self.cleanup_temp_files()
             
@@ -135,6 +138,30 @@ class SRTGenerator(SubtitleProcessor):
             f.write(srt_content)
         
         return srt_content
-
-
+    
+   
+    def tokenize_text(self, srt_content):
+        # Create a Sudachi tokenizer instance
+        tokenizer_obj = dictionary.Dictionary().create()
+        
+        # Regular expression to extract numbered blocks (e.g., "1\n00:00:00,000 --> 00:00:07,000\n...")
+        blocks = re.findall(r'(\d+)\n[\d:,]+ --> [\d:,]+\n(.+?)(?=\n\d+\n|$)', srt_content, re.S)
+        
+        # Prepare the list of tokenized results
+        result = []
+        for number, content in blocks:
+            # Remove leading/trailing whitespace from content
+            content = content.strip()
+            
+            # Tokenize the content
+            sentence_tokens = tokenizer_obj.tokenize(content, tokenizer.Tokenizer.SplitMode.C)
+            token_strs = [m.surface() for m in sentence_tokens]
+            
+            # Append the block as a dictionary
+            result.append({
+                'title': token_strs,
+                'content': content
+            })
+        
+        return result
 
