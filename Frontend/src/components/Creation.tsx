@@ -1,10 +1,11 @@
-import React, { useState, useRef, forwardRef, useImperativeHandle } from "react";
+import React, { useState, useRef, useEffect, forwardRef, useImperativeHandle } from "react";
 import axios from "axios";
 import { useVideoContext } from "../context/VideoContext"
 import ToggleSwitch from "./utils/ToggleSwitch";
 import Spinner from "./utils/Spiner";
 import VideoLoading from "./utils/VideoLoading";
 import LinearDeterminate from "./utils/Loading";
+import { styleData } from "../constants/style";
 import { HiMiniQuestionMarkCircle } from "react-icons/hi2";
 import { FaWandMagicSparkles } from "react-icons/fa6";
 import { PiStarFourFill } from "react-icons/pi";
@@ -12,11 +13,9 @@ import { FiRefreshCw } from "react-icons/fi";
 import { LuArrowRightFromLine } from "react-icons/lu";
 import { RiArrowDropDownLine } from "react-icons/ri";
 import { FaHeadphones } from "react-icons/fa6";
-import { FaPlay } from "react-icons/fa";
 import preview from "../assets/image/genimage_preview_picture-D9WhnO-2.png";
 import tts from "../assets/image/ic_ttv_option_tts-DWELf0eR.svg";
 import image from "../assets/image/ic_ttv_option_image-96eMZhIZ.svg";
-import media from "../assets/image/ic_ttv_option_bgm-sf29aAVo.svg"
 
 const Creation = forwardRef((_, ref) => {
     const [inputValue, setInputValue] = useState<{ topic: string }>({ topic: '' });
@@ -31,14 +30,50 @@ const Creation = forwardRef((_, ref) => {
     const [abortController, setAbortController] = useState<AbortController | null>(null);
     const [isModalVisible, setIsModalVisible] = useState(false);
     const [isCompleteModalVisible, setIsCompleteModalVisible] = useState(false);
-    const [isConfirmed, setIsConfirmed] = useState(false); // Add a state to track confirmation
+    const [isConfirmed, setIsConfirmed] = useState(false);
+    const [isStyleVisible, setIsStyleVisible] = useState(false);
+    const [previewImage, setPreviewImage] = useState(preview);
+    const [Style, setStyle] = useState<string>("");
     const { setSrtContent, styleTitle, setIsModalOpen, videoLoading, setVideoLoading, setTokenObj } = useVideoContext();
+
+    const styleRef = useRef<HTMLDivElement>(null);
 
     // Handle input changes with proper type annotations
     const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         setInputValue({ topic: e.target.value });
     };
 
+    const handleToggleStyle = () => {
+        setIsStyleVisible(!isStyleVisible);
+    };
+
+    const handleCloseStyle = () => {
+        setIsStyleVisible(false);
+    };
+
+    const handleClickOutside = (event: MouseEvent) => {
+        if (styleRef.current && !styleRef.current.contains(event.target as Node)) {
+            setIsStyleVisible(false);
+        }
+    };
+
+    useEffect(() => {
+        if (isStyleVisible) {
+            document.addEventListener('mousedown', handleClickOutside);
+        } else {
+            document.removeEventListener('mousedown', handleClickOutside);
+        }
+
+        return () => {
+            document.removeEventListener('mousedown', handleClickOutside);
+        };
+    }, [isStyleVisible]);
+
+    const handleImageClick = (image: string, title: string) => {
+        setPreviewImage(image);
+        setStyle(title) // Update the preview image
+
+    };
 
     const handleModalConfirm = () => {
         setIsConfirmed(true); // Set confirmation state
@@ -397,7 +432,7 @@ const Creation = forwardRef((_, ref) => {
                             )}
                         </div>
                     </div>
-                    <div className="w-1/6 border-l-[1px] bg-white border-gray-200 px-5 ">
+                    <div className="w-1/6 border-l-[1px]  bg-white border-gray-200 px-5 ">
                         <div className="pt-4 flex-col">
                             <div className="flex items-center">
                                 <RiArrowDropDownLine className="text-3xl" />
@@ -405,13 +440,13 @@ const Creation = forwardRef((_, ref) => {
                             </div>
                             <figure className="flex justify-center">
                                 <img
-                                    src={preview}
+                                    src={previewImage}
                                     alt="preview"
                                     className="w-[210px] h-32 object-cover rounded-md "
                                 />
                             </figure>
                         </div>
-                        <div className="pt-4">
+                        <div className="pt-4 relative">
                             <p className="font-bold  pb-4">動画要素</p>
                             <div className=" p-4 border-[1px] border-gray-200 rounded-2xl">
                                 <div className="border-b-[1px] pb-4 border-gray-200">
@@ -449,8 +484,9 @@ const Creation = forwardRef((_, ref) => {
                                         <div>
                                             <p className="pt-4">AI 画像</p>
                                             <div className=" flex justify-between items-center text-[#24B7D0] text-[13px] pl-4 pt-2">
-                                                <p>すべての色 / 写真</p>
-                                                <button className="py-1 px-2 text-gray-500 bg-gray-200 hover:bg-gray-300 rounded-md">
+                                                <p> 写真</p>
+                                                <button className="py-1 px-2 text-gray-500 bg-gray-200 hover:bg-gray-300 rounded-md"
+                                                    onClick={handleToggleStyle}>
                                                     変更
                                                 </button>
                                             </div>
@@ -462,12 +498,46 @@ const Creation = forwardRef((_, ref) => {
                                             <ToggleSwitch />
                                         </div>
                                     </div>
-                                    <div>
-                                        <div>
-                                            <p>画像&ビデオ</p>
-                                            <p>×</p>
+                                    {isStyleVisible && (
+                                        <div ref={styleRef} className="absolute top-14 right-[103%] w-[320px] h-[370px] bg-white rounded-xl border-[1px] p-2">
+                                            <div className=" border-b-2 py-2 border-gray-200 whitespace-nowrap flex justify-between">
+                                                <p className="font-bold">画像&ビデオ</p>
+                                                <p className="text-[16px] text-gray-300 hover:cursor-pointer "
+                                                    onClick={handleCloseStyle}>×</p>
+                                            </div>
+                                            <div className="flex mt-3 items-start h-[300px] overflow-y-scroll">
+                                                <p className="text-[12px] fixed">画風</p>
+                                                <div className="grid grid-cols-3 gap-2 pl-12 ">
+                                                    {styleData.map((style, index) => (
+                                                        <div key={index} className="flex flex-col items-center">
+                                                            <img src={style.image} alt="style" className="hover:cursor-pointer hover:border-2 hover:border-[#72CEDE] w-[76px] h-[76px] rounded-sm"
+                                                                onClick={() => handleImageClick(style.image, style.title)} />
+                                                            <p className="text-[12px]">{style.title}</p>
+                                                        </div>
+                                                    ))}
+                                                </div>
+                                            </div>
+                                        </div>
+                                    )}
+
+
+                                    <div className="fixed top-0 left-0 w-full h-full">
+                                        <div className="absolute bg-black opacity-30 w-full h-full" />
+                                        <div className="absolute bg-white w-[650px] h-4/12 py-4 px-7 rounded-xl top-[35%] left-[30%] ">
+                                            <div className="flex justify-between items-center">
+                                                <p className="text-[22px] font-bold">台本を読み上げる音声を選択してください</p>
+                                                <button onClick={() => setIsModalVisible(false)} className="text-[36px] text-gray-300 hover:cursor-pointer">×</button>
+                                            </div>
+                                            <div className="pt-6 pb-10">
+                                                <p>作成した台本が消えて、新しい台本を作成します。よろしいですか？</p>
+                                            </div>
+                                            <div className="flex justify-center gap-4 pb-6">
+                                                <button onClick={handleModalConfirm} className="py-2 px-6 bg-[#24B7D0] text-white rounded-lg hover:bg-[#2092a7]">書き直す</button>
+                                                <button onClick={() => setIsModalVisible(false)} className="py-2 px-8 bg-gray-200 text-white rounded-lg hover:bg-gray-300">閉じる</button>
+                                            </div>
                                         </div>
                                     </div>
+
                                 </div>
                             </div>
                         </div>
