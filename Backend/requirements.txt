@@ -57,4 +57,5 @@ openai-whisper
 sudachipy
 sudachidict_core
 sudachidict-full
+srt
 
