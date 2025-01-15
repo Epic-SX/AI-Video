@@ -1,13 +1,14 @@
 import React, { useState, useRef, useEffect } from "react";
 import { ChromePicker } from "react-color";
+import { useVideoContext } from "../../context/VideoContext";
 
 const ColorPickerButton: React.FC = () => {
-  const [color, setColor] = useState("#ffffff"); // Initial color
+  const { activeFontColor, setActiveFontColor } = useVideoContext();
   const [showPicker, setShowPicker] = useState(false); // State to toggle color picker visibility
   const pickerRef = useRef<HTMLDivElement>(null); // Reference for detecting outside clicks
 
   const handleColorChange = (updatedColor: any) => {
-    setColor(updatedColor.hex); // Update selected color
+    setActiveFontColor(updatedColor.hex); // Update selected color
   };
 
   // Handle clicks outside the picker to close it
@@ -28,7 +29,7 @@ const ColorPickerButton: React.FC = () => {
   }, []);
 
   return (
-    <div className="relative text-center my-5">
+    <div className="relative text-center z-50 my-5">
       {/* Button with dynamic bottom color */}
       <button
         onClick={() => setShowPicker(!showPicker)}
@@ -38,7 +39,7 @@ const ColorPickerButton: React.FC = () => {
         {/* Bottom color strip */}
         <div
           className="absolute bottom-0 left-0 right-0 h-1 rounded-b-lg"
-          style={{ backgroundColor: color }}
+          style={{ backgroundColor: activeFontColor }}
         ></div>
       </button>
 
@@ -49,7 +50,7 @@ const ColorPickerButton: React.FC = () => {
           className="absolute z-10 mt-3 left-1/2 -translate-x-1/2"
         >
           <ChromePicker
-            color={color}
+            color={activeFontColor}
             onChange={handleColorChange}
             disableAlpha // Disable transparency slider
           />

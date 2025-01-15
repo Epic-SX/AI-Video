@@ -1,17 +1,15 @@
-import React, { useState } from "react";
+import React from "react";
 import create from "../assets/image/ic_startmode-BuGMTegX.svg";
 import FontSizeSelector from "./utils/FontSize";
-import ColorPicker from "./utils/ColorPicker";
+import ColorPickerButton from "./utils/ColorPicker";
 import FontPicker from "font-picker-react";
 import Create from "../pages/Create"; // Import Create component
 import { useVideoContext } from "../context/VideoContext"
 import { HiFolderPlus } from "react-icons/hi2";
 import { HiFolderDownload } from "react-icons/hi";
 
-
 export default function MenuBar() {
-  const { isModalOpen, setIsModalOpen } = useVideoContext(); // State to manage modal visibility
-  const [activeFontFamily, setActiveFontFamily] = useState("Open Sans");
+  const { isModalOpen, setIsModalOpen, activeFontFamily, setActiveFontFamily, activeFontSize, setActiveFontSize, activeFontColor, setActiveFontColor } = useVideoContext(); // State to manage modal visibility
   const { srtContent } = useVideoContext();
 
   // Handle opening and closing of the modal
@@ -76,7 +74,7 @@ export default function MenuBar() {
         />
       </div>
       <FontSizeSelector />
-      <ColorPicker />
+      <ColorPickerButton />
 
       {/* Modal for Create component */}
       {isModalOpen && (

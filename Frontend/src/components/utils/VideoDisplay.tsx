@@ -14,7 +14,7 @@ const VideoDisplay: React.FC = () => {
   const [currentSubtitle, setCurrentSubtitle] = useState<string>("");
   const [videoUrl, setVideoUrl] = useState<string>(sample); // Default to sample video
   const videoRef = useRef<HTMLVideoElement>(null);
-  const { srtContent } = useVideoContext();
+  const { srtContent, activeFontFamily, activeFontSize, activeFontColor } = useVideoContext();
 
   // Parse and update subtitles whenever srtContent changes
   useEffect(() => {
@@ -100,7 +100,14 @@ const VideoDisplay: React.FC = () => {
       </video>
 
       {currentSubtitle && (
-        <div className="absolute bottom-10 text-white p-3 rounded text-center w-full z-20">
+        <div
+          className="absolute bottom-10 text-white p-3 rounded text-center w-full z-20"
+          style={{
+            fontFamily: activeFontFamily,
+            fontSize: `${activeFontSize}%`,
+            color: activeFontColor,
+          }}
+        >
           {currentSubtitle}
         </div>
       )}

@@ -13,7 +13,6 @@ export default function Main() {
         setClips(clips.filter((_, index) => index !== indexToRemove));
         setActiveClipIndex(null); // Reset the active clip index
     };
-
     return (
         <div className="w-full z-50 h-full font-sans">
             <MenuBar />
@@ -39,7 +38,7 @@ export default function Main() {
                     </div>
                 </div>
                 <div className="w-5/6 min-h-[calc(100vh-82px)] bg-gray-100 pt-5 flex flex-col items-center gap-4">
-                    {clips.map((clip, index) => (
+                    {tokenObj.map((clip, index) => (
                         <Clip
                             key={index}
                             title={clip.title}

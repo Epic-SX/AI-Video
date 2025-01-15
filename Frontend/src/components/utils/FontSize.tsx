@@ -1,13 +1,12 @@
-import React, { useState } from "react";
-
+import React from "react";
+import { useVideoContext } from "../../context/VideoContext";
 
 const FontSizeSelector: React.FC = () => {
-  const [fontSize, setFontSize] = useState(110); // Default font size
+  const { activeFontSize, setActiveFontSize } = useVideoContext();
 
   const handleFontSizeChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
     const newFontSize = event.target.value;
-    setFontSize(Number(newFontSize)); // Ensure the value is converted to a number
-    document.body.style.fontSize = `${newFontSize}%`; // Adjust font size dynamically
+    setActiveFontSize(Number(newFontSize)); // Ensure the value is converted to a number
   };
 
   return (
@@ -23,12 +22,12 @@ const FontSizeSelector: React.FC = () => {
 
       {/* Dropdown Menu */}
       <select
-        value={fontSize}
+        value={activeFontSize}
         onChange={handleFontSizeChange}
         className="border border-gray-300 rounded-md p-1 h-10  text-sm focus:outline-none"
       >
         {/* Options */}
-        {[25, 50, 75, 90, 100, 110, 125, 150, 200, 250, 300].map((size) => (
+        {[25, 50, 75, 90, 100, 110, 125, 150].map((size) => (
           <option key={size} value={size}>
             {size}
           </option>

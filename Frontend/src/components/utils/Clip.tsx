@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { FaVideo } from "react-icons/fa";
 import caption from '../../assets/image/ic_caption-DeaBVPJc.svg';
 
@@ -15,6 +15,10 @@ const Clip: React.FC<SimpleCardProps> = ({ title: initialTitle, content, index, 
     const [hoveredWordIndex, setHoveredWordIndex] = useState<number | null>(null);
     const [title, setTitle] = useState(initialTitle);
     const [clickedWordIndex, setClickedWordIndex] = useState<number | null>(null);
+
+    useEffect(() => {
+        setTitle(initialTitle);
+    }, [initialTitle]);
 
     const handleMouseEnter = (index: number) => {
         setHoveredWordIndex(index);
