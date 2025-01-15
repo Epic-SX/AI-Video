@@ -2,17 +2,18 @@ import React, { useState, useRef, useEffect, forwardRef, useImperativeHandle } f
 import axios from "axios";
 import { useVideoContext } from "../context/VideoContext"
 import ToggleSwitch from "./utils/ToggleSwitch";
-import Spinner from "./utils/Spiner";
+import { ThreeDot } from "react-loading-indicators";
 import VideoLoading from "./utils/VideoLoading";
 import LinearDeterminate from "./utils/Loading";
 import { styleData } from "../constants/style";
+import { audioData } from "../constants/audio";
 import { HiMiniQuestionMarkCircle } from "react-icons/hi2";
 import { FaWandMagicSparkles } from "react-icons/fa6";
 import { PiStarFourFill } from "react-icons/pi";
 import { FiRefreshCw } from "react-icons/fi";
 import { LuArrowRightFromLine } from "react-icons/lu";
 import { RiArrowDropDownLine } from "react-icons/ri";
-import { FaHeadphones } from "react-icons/fa6";
+
 import preview from "../assets/image/genimage_preview_picture-D9WhnO-2.png";
 import tts from "../assets/image/ic_ttv_option_tts-DWELf0eR.svg";
 import image from "../assets/image/ic_ttv_option_image-96eMZhIZ.svg";
@@ -32,8 +33,11 @@ const Creation = forwardRef((_, ref) => {
     const [isCompleteModalVisible, setIsCompleteModalVisible] = useState(false);
     const [isConfirmed, setIsConfirmed] = useState(false);
     const [isStyleVisible, setIsStyleVisible] = useState(false);
+    const [isAudioVisible, setIsAudioVisible] = useState(false);
     const [previewImage, setPreviewImage] = useState(preview);
     const [Style, setStyle] = useState<string>("");
+    const [Audio, setAudio] = useState<string>("");
+    const [selectedAudioIndex, setSelectedAudioIndex] = useState<number | null>(null);
     const { setSrtContent, styleTitle, setIsModalOpen, videoLoading, setVideoLoading, setTokenObj } = useVideoContext();
 
     const styleRef = useRef<HTMLDivElement>(null);
@@ -43,12 +47,20 @@ const Creation = forwardRef((_, ref) => {
         setInputValue({ topic: e.target.value });
     };
 
-    const handleToggleStyle = () => {
-        setIsStyleVisible(!isStyleVisible);
+    const handleAudioClick = (index: number, name: string) => {
+        setSelectedAudioIndex(index);
+        setAudio(name);
     };
 
-    const handleCloseStyle = () => {
-        setIsStyleVisible(false);
+    const handleToggleStyle = (id:string) => {
+        if(id === "style"){
+        setIsStyleVisible(!isStyleVisible);}
+        if(id === "audio"){
+            setIsAudioVisible(!isAudioVisible);}
+    };
+
+    const handleCloseStyle = (id:string) => {
+        id === "style" ? setIsStyleVisible(false) : setIsAudioVisible(false);
     };
 
     const handleClickOutside = (event: MouseEvent) => {
@@ -308,7 +320,7 @@ const Creation = forwardRef((_, ref) => {
                         </div>
 
                         {isModalVisible && (
-                            <div className="fixed top-0 left-0 w-full h-full">
+                            <div className="fixed top-0 left-0 z-50 w-full h-full">
                                 <div className="absolute bg-black opacity-30 w-full h-full" />
                                 <div className="absolute bg-white w-[22%] h-4/12 py-4 px-7 rounded-xl top-[35%] left-[40%] ">
                                     <div className="flex justify-between items-center">
@@ -326,7 +338,7 @@ const Creation = forwardRef((_, ref) => {
                             </div>
                         )}
                         {isCompleteModalVisible && (
-                            <div className="fixed top-0 left-0 w-full h-full">
+                            <div className="fixed top-0 left-0 z-50 w-full h-full">
                                 <div className="absolute bg-black opacity-30 w-full h-full" />
                                 <div className="absolute bg-white w-[22%] h-4/12 py-4 px-7 rounded-xl top-[35%] left-[40%] ">
                                     <div className="flex justify-between items-center">
@@ -358,7 +370,7 @@ const Creation = forwardRef((_, ref) => {
                                     {loading ? (
                                         <div className="flex p-2 items-center">
                                             <p>{styleTitle}に適したテーマを検索中です。10~20秒程度お待ちください。</p>
-                                            <Spinner />
+                                            <ThreeDot variant="bounce" color="#e2e2e2" size="small" text="" textColor="#bdb6b6" />
                                         </div>
                                     ) : (
                                         arrayTopic.map((topic, index) => (
@@ -463,10 +475,8 @@ const Creation = forwardRef((_, ref) => {
                                             <p>早く / 普通</p>
                                         </div>
                                         <div className="flex items-center pt-2 text-[14px] gap-2">
-                                            <button className="p-2 bg-gray-200 hover:bg-gray-300 text-gray-500 rounded-md">
-                                                <FaHeadphones className="text-[14px]" />
-                                            </button>
-                                            <button className="py-1 px-2 bg-gray-200 hover:bg-gray-300 text-gray-500 rounded-md">
+                                            <button className="py-1 px-2 bg-gray-200 hover:bg-gray-300 text-gray-500 rounded-md"
+                                            onClick={() => handleToggleStyle("audio")}>
                                                 変更
                                             </button>
                                         </div>
@@ -486,7 +496,7 @@ const Creation = forwardRef((_, ref) => {
                                             <div className=" flex justify-between items-center text-[#24B7D0] text-[13px] pl-4 pt-2">
                                                 <p> 写真</p>
                                                 <button className="py-1 px-2 text-gray-500 bg-gray-200 hover:bg-gray-300 rounded-md"
-                                                    onClick={handleToggleStyle}>
+                                                    onClick={() => handleToggleStyle("style")}>
                                                     変更
                                                 </button>
                                             </div>
@@ -503,14 +513,14 @@ const Creation = forwardRef((_, ref) => {
                                             <div className=" border-b-2 py-2 border-gray-200 whitespace-nowrap flex justify-between">
                                                 <p className="font-bold">画像&ビデオ</p>
                                                 <p className="text-[16px] text-gray-300 hover:cursor-pointer "
-                                                    onClick={handleCloseStyle}>×</p>
+                                                    onClick={() => handleCloseStyle("style")}>×</p>
                                             </div>
                                             <div className="flex mt-3 items-start h-[300px] overflow-y-scroll">
                                                 <p className="text-[12px] fixed">画風</p>
                                                 <div className="grid grid-cols-3 gap-2 pl-12 ">
                                                     {styleData.map((style, index) => (
                                                         <div key={index} className="flex flex-col items-center">
-                                                            <img src={style.image} alt="style" className="hover:cursor-pointer hover:border-2 hover:border-[#72CEDE] w-[76px] h-[76px] rounded-sm"
+                                                            <img src={style.image} alt="style" className="hover:cursor-pointer hover:border-2 hover:border-[#72CEDE] focus:border-2 focus:border-[#72CEDE] w-[76px] h-[76px] rounded-sm"
                                                                 onClick={() => handleImageClick(style.image, style.title)} />
                                                             <p className="text-[12px]">{style.title}</p>
                                                         </div>
@@ -519,25 +529,39 @@ const Creation = forwardRef((_, ref) => {
                                             </div>
                                         </div>
                                     )}
+                                    {isAudioVisible && ( 
+                                        <div className="fixed top-0 left-0 w-full h-full z-50">
+                                            <div className="absolute bg-black opacity-30 w-full h-full" />
+                                            <div className="absolute bg-white w-[650px] h-4/12 py-4 px-7 rounded-xl top-[15%] left-[30%] ">
+                                                <div className="flex justify-between items-center">
+                                                    <p className="text-[22px] font-bold">台本を読み上げる音声を選択してください</p>
+                                                    <button onClick={() => handleCloseStyle("audio")} className="text-[36px] text-gray-300 hover:cursor-pointer">×</button>
+                                                </div>
 
-
-                                    <div className="fixed top-0 left-0 w-full h-full">
-                                        <div className="absolute bg-black opacity-30 w-full h-full" />
-                                        <div className="absolute bg-white w-[650px] h-4/12 py-4 px-7 rounded-xl top-[35%] left-[30%] ">
-                                            <div className="flex justify-between items-center">
-                                                <p className="text-[22px] font-bold">台本を読み上げる音声を選択してください</p>
-                                                <button onClick={() => setIsModalVisible(false)} className="text-[36px] text-gray-300 hover:cursor-pointer">×</button>
-                                            </div>
-                                            <div className="pt-6 pb-10">
-                                                <p>作成した台本が消えて、新しい台本を作成します。よろしいですか？</p>
-                                            </div>
-                                            <div className="flex justify-center gap-4 pb-6">
-                                                <button onClick={handleModalConfirm} className="py-2 px-6 bg-[#24B7D0] text-white rounded-lg hover:bg-[#2092a7]">書き直す</button>
-                                                <button onClick={() => setIsModalVisible(false)} className="py-2 px-8 bg-gray-200 text-white rounded-lg hover:bg-gray-300">閉じる</button>
+                                                <div className="grid grid-cols-2 gap-2">
+                                                    {audioData.map((audio, index) => (
+                                                        <div
+                                                            key={index}
+                                                            className={`flex items-center gap-4 border-[1px] p-2 rounded-lg hover:cursor-pointer ${selectedAudioIndex === index
+                                                                ? 'border-[#24B7D0] bg-[#EEFCFD]'
+                                                                : 'border-gray-200 hover:border-gray-300 hover:bg-gray-50'
+                                                                }`}
+                                                            onClick={() => handleAudioClick(index, audio.name)}
+                                                        >
+                                                            <img src={audio.image} alt="style" className="hover:cursor-pointer w-[80px] h-[80px] rounded-md" />
+                                                            <div>
+                                                                <p className="font-bold">{audio.name}</p>
+                                                                <p className="text-[12px] text-[#595959] pt-2">{audio.description}</p>
+                                                            </div>
+                                                        </div>
+                                                    ))}
+                                                </div>
+                                                <div className="flex justify-end gap-4 pb-6">
+                                                    <button onClick={() => handleCloseStyle("audio")} className="py-2 px-6 bg-[#24B7D0] text-white rounded-lg hover:bg-[#2092a7]">確認</button>
+                                                </div>
                                             </div>
                                         </div>
-                                    </div>
-
+                                    )}
                                 </div>
                             </div>
                         </div>

@@ -87,7 +87,7 @@ const VideoDisplay: React.FC = () => {
   };
 
   return (
-    <div className="relative w-full h-full bg-black flex justify-center items-center">
+    <div className="relative w-full h-full  bg-black flex justify-center items-center">
       <video
         key={videoUrl} // Remount video when URL changes
         className="relative w-full h-[230px] z-10"
