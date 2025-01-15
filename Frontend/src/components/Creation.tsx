@@ -36,7 +36,7 @@ const Creation = forwardRef((_, ref) => {
     const [isAudioVisible, setIsAudioVisible] = useState(false);
     const [previewImage, setPreviewImage] = useState(preview);
     const [Style, setStyle] = useState<string>("");
-    const [Audio, setAudio] = useState<string>("");
+    const [Audio, setAudio] = useState<string>("ミナト");
     const [selectedAudioIndex, setSelectedAudioIndex] = useState<number | null>(null);
     const { setSrtContent, styleTitle, setIsModalOpen, videoLoading, setVideoLoading, setTokenObj } = useVideoContext();
 
@@ -51,6 +51,14 @@ const Creation = forwardRef((_, ref) => {
         setSelectedAudioIndex(index);
         setAudio(name);
     };
+
+    useEffect(() => {
+        setResponse((prev) => ({
+            ...prev,
+            audio: Audio,
+            style: Style,
+        }));
+    }, [Audio, Style]);
 
     const handleToggleStyle = (id:string) => {
         if(id === "style"){
@@ -501,12 +509,7 @@ const Creation = forwardRef((_, ref) => {
                                                 </button>
                                             </div>
                                         </div>
-                                        <div className="flex justify-between pt-4  items-center">
-                                            <div className="flex items-center gap-3">
-                                                <p className="pl-4">フリービデオ</p>
-                                            </div>
-                                            <ToggleSwitch />
-                                        </div>
+                                        
                                     </div>
                                     {isStyleVisible && (
                                         <div ref={styleRef} className="absolute top-14 right-[103%] w-[320px] h-[370px] bg-white rounded-xl border-[1px] p-2">

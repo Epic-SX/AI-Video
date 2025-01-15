@@ -34,11 +34,13 @@ async def generate_video():
         data = await request.json
         print(f"Received data: {data}")
         script = data.get("script")
+        audio = data.get("audio")
+        style = data.get("style")
         if not script:
             return jsonify({"error": "Topic is required"}), 400
 
         # Call the asynchronous video generation function
-        result =await generate_video_from_topic(script)
+        result =await generate_video_from_topic(script, audio, style)
         
         srt_content = result.get('srt_content')
         token_obj = result.get('token_obj')

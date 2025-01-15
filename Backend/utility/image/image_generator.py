@@ -17,7 +17,7 @@ def parse_srt_file(srt_file_path):
     return prompts
 
 # Function to generate images based on prompts
-def image_generator(prompts, image_size="1024x1024"):
+def image_generator(prompts, style, image_size="1024x1024"):
     """
     Generate images using OpenAI's DALL-E API based on provided prompts.
 
@@ -31,7 +31,7 @@ def image_generator(prompts, image_size="1024x1024"):
     for prompt in prompts:
         try:
             # Modify the prompt to emphasize Japanese text
-            japanese_prompt = f"{prompt} (日本語のテキストを使用して、画像の内容に日本語を含めてください)"
+            japanese_prompt = f"{prompt}({style}画像をください) (日本語のテキストを使用して、画像の内容に日本語を含めてください)"
             
             # Call OpenAI's API to generate an image based on the modified prompt
             response = client.images.generate(
